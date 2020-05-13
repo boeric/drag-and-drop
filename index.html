@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Drag and Drop Demo</title>
+  <!-- Author: Bo Ericsson, https://www.linkedin.com/in/boeric00/ -->
+  <style>
+    body {
+      width: 940px;
+      max-width: 940px;
+      height: 480px;
+      max-height: 480px;
+      margin: 10px;
+      outline: 1px solid gray;
+      font-family: arial;
+    }
+    .row {
+      display: flex;
+      flex-direction: row;
+    }
+    .zone {
+      width: 470px;
+      height: 240px;
+      outline: 1px solid lightgray;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      overflow: scroll;
+    }
+    .item {
+      margin: 10px;
+      color: white;
+      text-align: center;
+      line-height: 75px;
+    }
+    .circle {
+      width: 75px;
+      height: 75px;
+      border-radius: 50%;
+      background-color: blue;
+    }
+    .square {
+      width: 75px;
+      height: 75px;
+      background-color: green;
+    }
+    .color-blue {
+      background-color: blue;
+    }
+    .color-green {
+      background-color: green;
+    }
+    .color-orange {
+      background-color: orange;
+    }
+    .color-darkred {
+      background-color: darkred;
+    }
+    .dragging {
+      background-color: rgba(150, 150, 150, 0.7);
+    }
+    .droppable {
+      background-color: lightgray;
+    }
+  </style>
+</head>
+<body>
+  <div class="row">
+    <div id="zone-0" class="zone" ondragover="event.preventDefault()"></div>
+    <div id="zone-1" class="zone" ondragover="event.preventDefault()"></div>
+  </div>
+  <div class="row">
+    <div id="zone-2" class="zone" ondragover="event.preventDefault()"></div>
+    <div id="zone-3" class="zone" ondragover="event.preventDefault()"></div>
+  </div>
+</body>
+
+<script>
+  'use strict';
+
+  // Id generator (a demo of iife, generator function, and closure)
+  // Outer iife to define the getId function
+  const getId = (() => {
+    // Inner iife to run the generator function which returns id
+    const id = (function* () {
+      let i = 0;
+      while (true) {
+        yield i++;
+      }
+    })();
+
+    // id locked inside the outer iife's closure
+    return () => id.next().value;
+  })();
+
+  // Returns an array of specified size with values incrementing from 0
+  function range(length) {
+    const array = [];
+    for (let i = 0; i < length; i++) {
+      array.push(i);
+    }
+    return array;
+  }
+
+  // Zone colors (used to pick colors for the object generated in each zone)
+  const zoneColors = ['blue', 'green', 'orange', 'darkred'];
+
+  // Obtain references to the four zones
+  const zones = document.querySelectorAll('.zone');
+
+  // Drag handlers
+  let source; // Contains a reference to the item being dragged
+
+  // Triggers when an item starts being dragged
+  function ondragstart(evt) {
+    // Add the 'dragging' class from the item being moved
+    this.classList.add('dragging');
+    source = this;
+    evt.dataTransfer.effectAllowed = 'move';
+  }
+
+  function ondragover(evt) {
+    if (evt.target.className == "zone") {}
+    evt.preventDefault();
+  }
+
+  function ondragenter(evt) {
+    if (evt.target.classList.contains('zone')) {
+      // Add the 'droppable' class of the zone element
+      evt.target.classList.add('droppable');
+    }
+    evt.preventDefault();
+  }
+
+  function ondragleave(evt) {
+    if (evt.target.classList.contains('zone')) {
+      // Remove the 'droppable' class of the zone element
+      evt.target.classList.remove('droppable');
+    }
+  }
+
+  function ondrop(evt) {
+    // Remove the 'dragging' class from the item being moved
+    source.classList.remove('dragging');
+
+    if (evt.target.classList.contains('zone')) {
+      // Remove the 'droppable' class of the zone element
+      evt.target.classList.remove('droppable');
+      // Move the item
+      evt.target.appendChild(source);
+    }
+    evt.preventDefault();
+  }
+
+  // Create items
+  zones.forEach((zone, zoneIdx) => {
+    // Add handlers for the zone's drag events
+    zone.ondragenter = ondragenter;
+    zone.ondragover = ondragover;
+    zone.ondragleave = ondragleave;
+    zone.ondrop = ondrop;
+
+    // Determine items to create in this zone (min 1, max 7)
+    const items = ~~(Math.random() * 7) + 1;
+
+    range(items).forEach((idx) => {
+      // Create the element
+      const elem = document.createElement('div');
+      // Generate the text for the element
+      const text = `${zoneIdx}-${idx}`;
+      elem.innerHTML = text;
+      // Determine type (circle or square randomly)
+      const type = Math.random() > 0.5 ? 'circle' : 'square';
+      elem.className = `item ${type} color-${zoneColors[zoneIdx]}`;
+      // Set the element id (not necessary but demos, when inspected,
+      // that items actually move, not just the innerHTML)
+      elem.id = getId();
+      // Enable dragging
+      elem.draggable = true;
+      // Handler to kickstart the dragging process
+      elem.ondragstart = ondragstart;
+
+      // Append the item to the zone
+      zone.appendChild(elem);
+    })
+  });
+</script>
