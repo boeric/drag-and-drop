@@ -60,7 +60,7 @@
       background-color: rgba(150, 150, 150, 0.7);
     }
     .droppable {
-      background-color: lightgray;
+      background-color: rgba(150, 150, 150, 0.2);
     }
   </style>
 </head>
@@ -79,9 +79,10 @@
   'use strict';
 
   // Id generator (a demo of iife, generator function, and closure)
-  // Outer iife to define the getId function
+  // Outer iife to define the getId function, which returns an ever increasing integer
+  // with each call
   const getId = (() => {
-    // Inner iife to run the generator function which returns id
+    // Inner iife to run the generator function which returns 'id', a generator object
     const id = (function* () {
       let i = 0;
       while (true) {
@@ -89,7 +90,7 @@
       }
     })();
 
-    // id locked inside the outer iife's closure
+    // The 'id' generator is locked inside the outer iife's closure
     return () => id.next().value;
   })();
 
@@ -115,6 +116,7 @@
   function ondragstart(evt) {
     // Add the 'dragging' class from the item being moved
     this.classList.add('dragging');
+    // Save a reference to the item being dragged
     source = this;
     evt.dataTransfer.effectAllowed = 'move';
   }
